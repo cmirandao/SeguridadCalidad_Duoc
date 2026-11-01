@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<header th:fragment="menu" class="navbar">
+    <a class="brand" th:href="@{/}">🎮 Portal Gamer</a>
+
+    <nav>
+        <a th:href="@{/}">Inicio</a>
+        <a th:href="@{/eventos}">Eventos</a>
+        <a th:href="@{/perfil}">Mi perfil</a>
+
+        <a th:href="@{/login}"
+           sec:authorize="!isAuthenticated()">Ingresar</a>
+
+        <a th:href="@{/registro}"
+           sec:authorize="!isAuthenticated()">Registrarse</a>
+
+        <form th:action="@{/logout}"
+              method="post"
+              sec:authorize="isAuthenticated()"
+              class="logout-form">
+            <button type="submit" class="nav-button">Cerrar sesión</button>
+        </form>
+    </nav>
+</header>
+
+<footer th:fragment="pie" class="footer">
+    <p>Portal Gamer · Comunidad, videojuegos y eventos.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar | Portal Gamer</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments :: menu}"></div>
+
+<main class="form-container">
+    <section class="form-card">
+        <h1>Bienvenido de vuelta</h1>
+        <p>Ingresa para acceder a la comunidad gamer.</p>
+
+        <div class="alert success"
+             th:if="${mensaje}"
+             th:text="${mensaje}"></div>
+
+        <div class="alert error" th:if="${param.error}">
+            El correo o la contraseña son incorrectos.
+        </div>
+
+        <div class="alert success" th:if="${param.logout}">
+            Has cerrado sesión correctamente.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+
+            <label for="username">Correo electrónico</label>
+            <input type="email" id="username" name="username"
+                   placeholder="nombre@correo.cl" required>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password"
+                   placeholder="Tu contraseña" required>
+
+            <button class="button full-width" type="submit">
+                Iniciar sesión
+            </button>
+        </form>
+
+        <p class="form-footer">
+            ¿No tienes cuenta?
+            <a th:href="@{/registro}">Regístrate aquí</a>
+        </p>
+    </section>
+</main>
+
+<div th:replace="~{fragments :: pie}"></div>
+
+</body>
+</html>

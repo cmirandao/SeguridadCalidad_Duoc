@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Gamer | Inicio</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments :: menu}"></div>
+
+<main class="container">
+
+    <section class="hero">
+        <span class="badge">TU COMUNIDAD GAMER</span>
+        <h1>Vive el mundo gamer</h1>
+        <p>
+            Descubre torneos, ferias, competencias de esports y encuentros
+            para compartir tu pasión por los videojuegos.
+        </p>
+
+        <div class="hero-actions">
+            <a class="button" th:href="@{/registro}"
+               sec:authorize="!isAuthenticated()">Crear cuenta</a>
+
+            <a class="button" th:href="@{/eventos}">Explorar eventos</a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <h2>Eventos destacados</h2>
+                <p>Actividades seleccionadas para la comunidad.</p>
+            </div>
+        </div>
+
+        <div class="grid">
+            <article class="card" th:each="evento : ${destacados}">
+                <span class="badge" th:text="${evento.categoria}"></span>
+                <h3 th:text="${evento.titulo}"></h3>
+
+                <p th:text="${evento.descripcion}"></p>
+
+                <p>
+                    📍 <span th:text="${evento.ubicacion}"></span>
+                </p>
+
+                <p>
+                    📅 <span th:text="${evento.fecha}"></span>
+                </p>
+
+                <a class="button"
+                   th:href="@{/eventos/{id}(id=${evento.id})}">
+                    Ver detalles
+                </a>
+            </article>
+        </div>
+
+        <p th:if="${#lists.isEmpty(destacados)}">
+            Próximamente anunciaremos nuevos eventos destacados.
+        </p>
+    </section>
+
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <h2>Próximos eventos</h2>
+                <p>Organiza tu agenda y participa.</p>
+            </div>
+
+            <a th:href="@{/eventos}">Ver todos →</a>
+        </div>
+
+        <div class="grid">
+            <article class="card" th:each="evento : ${proximos}">
+                <span class="badge" th:text="${evento.categoria}"></span>
+                <h3 th:text="${evento.titulo}"></h3>
+                <p th:text="${evento.ubicacion}"></p>
+                <p th:text="${evento.fecha}"></p>
+
+                <a th:href="@{/eventos/{id}(id=${evento.id})}">
+                    Conocer evento
+                </a>
+            </article>
+        </div>
+    </section>
+
+    <section class="sponsors">
+        <h2>Marcas y comunidad</h2>
+        <p>
+            Un espacio para conectar jugadores, organizadores, tiendas,
+            desarrolladores y marcas asociadas al mundo gamer.
+        </p>
+        <div class="sponsor-list">
+            <span>Gaming</span>
+            <span>Esports</span>
+            <span>Hardware</span>
+            <span>Juegos Indie</span>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments :: pie}"></div>
+
+</body>
+</html>

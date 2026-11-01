@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos | Portal Gamer</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments :: menu}"></div>
+
+<main class="container">
+    <section class="page-heading">
+        <span class="badge">AGENDA GAMER</span>
+        <h1>Descubre eventos</h1>
+        <p>Encuentra competencias, ferias y actividades cerca de ti.</p>
+    </section>
+
+    <section class="filter-panel">
+        <form th:action="@{/eventos}" method="get" class="filter-form">
+
+            <div>
+                <label for="categoria">Categoría</label>
+                <select id="categoria" name="categoria">
+                    <option value="">Todas las categorías</option>
+                    <option value="Gaming"
+                            th:selected="${categoriaSeleccionada == 'Gaming'}">
+                        Gaming
+                    </option>
+                    <option value="Esports"
+                            th:selected="${categoriaSeleccionada == 'Esports'}">
+                        Esports
+                    </option>
+                    <option value="Indie"
+                            th:selected="${categoriaSeleccionada == 'Indie'}">
+                        Juegos Indie
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha"
+                       th:value="${fechaSeleccionada}">
+            </div>
+
+            <div>
+                <label for="ubicacion">Ubicación</label>
+                <input type="text" id="ubicacion" name="ubicacion"
+                       placeholder="Ej. Santiago"
+                       th:value="${ubicacionSeleccionada}">
+            </div>
+
+            <button class="button" type="submit">Buscar</button>
+            <a class="button button-secondary"
+               th:href="@{/eventos}">Limpiar</a>
+        </form>
+    </section>
+
+    <section class="section">
+        <p>
+            Resultados encontrados:
+            <strong th:text="${#lists.size(eventos)}"></strong>
+        </p>
+
+        <div class="grid">
+            <article class="card" th:each="evento : ${eventos}">
+                <span class="badge" th:text="${evento.categoria}"></span>
+
+                <h2 th:text="${evento.titulo}"></h2>
+
+                <p th:text="${evento.descripcion}"></p>
+
+                <p>
+                    <strong>Fecha:</strong>
+                    <span th:text="${evento.fecha}"></span>
+                </p>
+
+                <p>
+                    <strong>Hora:</strong>
+                    <span th:if="${evento.hora != null}"
+                          th:text="${evento.hora}"></span>
+                    <span th:if="${evento.hora == null}">
+                        Por confirmar
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Ubicación:</strong>
+                    <span th:text="${evento.ubicacion}"></span>
+                </p>
+
+                <a class="button"
+                   th:href="@{/eventos/{id}(id=${evento.id})}">
+                    Ver detalles
+                </a>
+            </article>
+        </div>
+
+        <div class="empty-state" th:if="${#lists.isEmpty(eventos)}">
+            <h2>No encontramos eventos</h2>
+            <p>Prueba con otra categoría, fecha o ubicación.</p>
+            <a class="button" th:href="@{/eventos}">
+                Ver todos los eventos
+            </a>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments :: pie}"></div>
+
+</body>
+</html>
