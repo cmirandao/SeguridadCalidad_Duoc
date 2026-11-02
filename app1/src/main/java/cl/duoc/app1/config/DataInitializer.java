@@ -7,6 +7,7 @@ import cl.duoc.app1.repository.GamerEventRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class DataInitializer {
     CommandLineRunner inicializarDatos(
             AppUserRepository userRepository,
             GamerEventRepository eventRepository,
-            PasswordEncoder passwordEncoder) {
+            @Lazy PasswordEncoder passwordEncoder) {
 
         return args -> {
 

@@ -8,6 +8,23 @@
     <title>Portal Gamer | Inicio</title>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
+<!-- Script para Popup de Alertas -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var mensaje = /*[[${alertaPopup}]]*/ null;
+        if (mensaje != null) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Acceso Restringido',
+                text: mensaje,
+                confirmButtonColor: '#6f42c1',
+                background: '#1e1e2f',
+                color: '#ffffff'
+            });
+        }
+        /*]]>*/
+    </script>
 <body>
 
 <div th:replace="~{fragments :: menu}"></div>
@@ -53,10 +70,9 @@
                     📅 <span th:text="${evento.fecha}"></span>
                 </p>
 
-                <a class="button"
-                   th:href="@{/eventos/{id}(id=${evento.id})}">
-                    Ver detalles
-                </a>
+                <div th:each="destacado : ${destacados}">
+                    <a th:href="@{/eventos/{id}(id=${destacado.id})}">Ver detalles</a>
+                </div>
             </article>
         </div>
 

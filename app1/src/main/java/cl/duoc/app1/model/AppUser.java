@@ -1,7 +1,6 @@
 package cl.duoc.app1.model;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,13 +29,10 @@ public class AppUser {
 
     private boolean notificaciones = true;
 
-    @ElementCollection
-    @CollectionTable(
-        name = "roles_usuario",
-        joinColumns = @JoinColumn(name = "usuario_id")
-    )
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "usuario_roles", joinColumns = @JoinColumn(name = "usuario_id"))
     @Column(name = "rol")
-    private List<String> roles = new ArrayList<>();
+    private List<String> roles;
 
     public AppUser() {
     }
