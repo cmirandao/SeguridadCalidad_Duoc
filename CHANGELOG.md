@@ -4,6 +4,19 @@ Todas las modificaciones notables de este proyecto serán documentadas en este a
 
 ---
 
+## [1.3.0] - Semana 3: Seguridad Avanzada, JWT y Endurecimiento (Hardening)
+
+### Agregado
+- **Autenticación Basada en Tokens JWT**: Implementación de filtros de seguridad (`JwtRequestFilter`) y almacenamiento seguro en cookies `HttpOnly` para la gestión de sesiones de usuario.
+- **Endurecimiento de Cabeceras HTTP**: Configuración de cabeceras de Content Security Policy (CSP) en `SecurityConfig` para mitigar vectores de inyección y control de recursos.
+
+### Seguridad y Remediación (OWASP ZAP)
+- **Mitigación de Cookies**: Incorporación de los atributos de seguridad `SameSite=Lax` y `HttpOnly`, junto con la desactivación de la reescritura de URLs con `jsessionid`.
+- **Independencia de Recursos**: Centralización y empaquetado local de librerías frontend (como SweetAlert2) para asegurar la integridad de los recursos estáticos.
+- **Validación Arquitectónica**: Documentación y justificación técnica del uso de tokens JWT stateless frente a la gestión tradicional de formularios CSRF.
+
+---
+
 ## [1.2.0] - Semana 2: Persistencia, Base de Datos y Autenticación Avanzada
 
 ### Agregado

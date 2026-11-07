@@ -25,9 +25,15 @@ public interface GamerEventRepository extends JpaRepository<GamerEvent, Long> {
             LocalDate fecha
     );
 
-    // Método para a buscar por nombre/título
+    // Método para buscar por nombre/título y fecha
     List<GamerEvent> findByTituloContainingIgnoreCaseAndFechaGreaterThanEqualOrderByFechaAsc(
             String titulo, 
             LocalDate fecha
     );
+
+    // NUEVO: Método para buscar eventos en una fecha exacta específica
+    List<GamerEvent> findByFechaOrderByFechaAsc(LocalDate fecha);
+
+    // NUEVO: Busca por ubicación ignorando por completo la fecha del evento
+    List<GamerEvent> findByUbicacionContainingIgnoreCaseOrderByFechaAsc(String ubicacion);
 }
