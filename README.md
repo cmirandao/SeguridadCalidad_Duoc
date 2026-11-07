@@ -10,7 +10,7 @@
 ## Descripción del Proyecto
 **Portal Gamer** es una aplicación web desarrollada como caso semestral para la comunidad de videojuegos y esports. Su propósito principal es reunir, difundir y gestionar información sobre torneos, ferias, competencias y encuentros de gaming de forma interactiva, intuitiva y altamente segura.
 
-El sistema contempla un modelo de control de accesos basado en roles, protección contra vulnerabilidades web comunes, gestión de perfiles de usuario personalizados y un sistema robusto de consultas y filtros de eventos orientados tanto a usuarios públicos como autenticados.
+El sistema contempla un modelo de control de accesos basado en roles, protección contra vulnerabilidades web comunes, gestión de perfiles de usuario personalizados, un sistema robusto de consultas y filtros de eventos, y una capa de autenticación basada en **JSON Web Tokens (JWT)** integrada tanto para navegación web segura (vía cookies `HttpOnly`) como para consumo de servicios backend.
 
 ---
 
@@ -18,15 +18,14 @@ El sistema contempla un modelo de control de accesos basado en roles, protecció
 
 El proyecto está construido bajo los estándares de desarrollo moderno en Java y Spring Framework:
 
--   **Java 21**: Lenguaje de programación principal (versión LTS).
--   **Spring Boot 3.3.5**: Framework base para la creación de la aplicación web y microservicios.
--   **Spring Security**: Marco de autenticación y control de acceso robusto (protección de URLs y sesiones).
--   **Spring Data JPA / Hibernate**: Capa de persistencia para la interacción con la base de datos relacional.
--   **Thymeleaf**: Motor de plantillas moderno del lado del servidor para el renderizado del frontend.
--   **Bases de Datos**: 
-    *   *Desarrollo / Pruebas:* H2 Database (en memoria).
-    *   *Producción:* MySQL Driver y conector relacional.
--   **Maven**: Herramienta de gestión de dependencias y automatización de compilación.
+* **Java 21**: Lenguaje de programación principal (versión LTS).
+* **Spring Boot 3.3.5**: Framework base para la creación de la aplicación web y microservicios.
+* **Spring Security**: Marco de autenticación y control de acceso robusto (protección de URLs, proveedor personalizado y filtros).
+* **Spring Data JPA / Hibernate**: Capa de persistencia para la interacción con la base de datos relacional.
+* **Thymeleaf**: Motor de plantillas moderno del lado del servidor para el renderizado del frontend.
+* **Bases de Datos**: 
+  * *Producción / Contenedor:* MySQL 8.0 (con conector JDBC y red Docker aislada).
+* **Maven**: Herramienta de gestión de dependencias y automatización de compilación.
 
 ---
 
@@ -37,21 +36,22 @@ El proyecto sigue una arquitectura limpia orientada a componentes y separación 
 ```text
 cl.duoc.app1
 │
-├── config/          # Clases de configuración (Seguridad, inicialización de datos con DataInitializer)
-├── controller/      # Controladores web encargados de gestionar las peticiones HTTP y vistas (WebController)
-├── model/           # Entidades de persistencia y modelos de dominio (AppUser, GamerEvent)
-├── repository/      # Interfaces de Spring Data JPA para el acceso a datos (AppUserRepository, GamerEventRepository)
-└── service/         # Lógica de negocio y contratos de servicio (CustomUserDetailsService, RegistrationService)
+├── config/         # Clases de configuración y componentes de inicialización de datos (DataInitializer)
+├── controller/     # Controladores web y REST (WebController, AuthController)
+├── model/          # Entidades de persistencia y modelos de dominio (AppUser, GamerEvent)
+├── repository/     # Interfaces de Spring Data JPA para el acceso a datos (AppUserRepository, GamerEventRepository)
+├── security/       # Componentes de seguridad JWT, filtros y proveedores (JwtTokenUtil, CustomAuthenticationProvider, TokenStore, SecurityConfig)
+└── service/        # Lógica de negocio y contratos de servicio (CustomUserDetailsService, RegistrationServiceImpl)
 ```
 
 ---
 
 ## Características de Seguridad Implementadas
 
--   **Control de Accesos Basado en Rutas**: Separación estricta entre endpoints públicos (`/`, `/recetas`, `/login`, `/registro`) y privados (`/perfil`, `/eventos/**`).
--   **Gestión Segura de Contraseñas**: Codificación mediante `BCryptPasswordEncoder` para el almacenamiento seguro de credenciales.
--   **Control de Sesiones**: Manejo de sesiones HTTP seguras con invalidación de sesión y expiración de cookies (`JSESSIONID`) al cerrar sesión.
--   **Validaciones Robustas**: Filtrado y validación de entradas de usuario en formularios de registro y actualización de perfiles.
+-   **Control de Accesos Basado en Rutas**: Separación estricta entre endpoints públicos (`/`, `/inicio`, `/eventos`, `/login`, `/registro`) y privados (`/perfil`, `/eventos/**`, `/greetings`).
+-   **Autenticación Basada en JWT y Cookies Seguras**: Emisión de tokens firmados mediante HMAC-SHA256 y almacenamiento seguro en cookies `HttpOnly` para mitigar ataques de tipo XSS.
+-   **Gestión Segura de Contraseñas**: Codificación mediante `BCryptPasswordEncoder` para el almacenamiento seguro de credenciales en MySQL.
+-   **Control de Sesiones**: Manejo de sesiones HTTP seguras con invalidación y control estricto de autorización mediante `SecurityFilterChain`.
 
 ---
 
@@ -61,30 +61,26 @@ Sigue estos pasos para levantar el proyecto en tu entorno local:
 
 ### Prerrequisitos
 -   Tener instalado **Java JDK 21** o superior.
+-   Tener instalado **Docker y Docker Compose**.
 -   Tener instalado **Maven** (o utilizar el wrapper incluido `mvnw`).
 
-### Pasos para iniciar:
-1. Clona el repositorio en tu máquina local:
-   ```bash
-   git clone https://github.com/cmirandao/SeguridadCalidad_Formativa.git
-   ```
-2. Entra a la carpeta del proyecto:
-   ```bash
-   cd Formativa_grupo1/app1
-   ```
-3. Ejecuta la aplicación utilizando Maven Wrapper:
-   * **En Linux / macOS:**
-     ```bash
-     ./mvnw spring-boot:run
-     ```
-   * **En Windows (CMD / PowerShell):**
-     ```cmd
-     mvnw.cmd spring-boot:run
-     ```
-4. Abre tu navegador web e ingresa a la siguiente URL:
-   ```text
-   http://localhost:8080/
-   ```
+---
+
+## Despliegue en Contenedores (Docker)
+
+Desde la carpeta `app1`, define una contraseña para MySQL y levanta ambos servicios con Docker Compose. Compose espera a que la base de datos esté lista antes de iniciar la aplicación:
+
+* **Windows (PowerShell):**
+  ```powershell
+  $env:MYSQL_ROOT_PASSWORD = "elige-una-contrasena"
+  docker compose up --build
+  ```
+* **Linux / macOS:**
+  ```bash
+  MYSQL_ROOT_PASSWORD='elige-una-contrasena' docker compose up --build
+  ```
+
+La aplicación estará disponible en `http://localhost:8081/`. Los datos de MySQL persisten en un volumen Docker dedicado.
 
 ---
 
