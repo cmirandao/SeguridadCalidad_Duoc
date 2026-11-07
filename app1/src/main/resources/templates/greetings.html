@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>  
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">  
+<head>   
+    <title>Portal Gamer - Saludo JWT</title>   
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />  
+    <link rel="stylesheet" th:href="@{/css/styles.css}"> 
+</head>  
+<body>  
+
+    <div th:replace="~{fragments :: menu}"></div>
+
+    <main class="container">
+        <section class="hero" style="text-align: center; padding: 40px 20px;">
+            <span class="badge">INTEGRACIÓN JWT</span>
+            
+            <h1 th:text="${name}" style="margin-top: 20px; font-size: 1.8rem;"></h1> 
+             
+            <div sec:authorize="isAuthenticated()" style="margin-top: 30px;">  
+                <p style="font-size: 1.1rem; color: #a0a0c0;">
+                    Autenticado como: <strong th:text="${#authentication.name}" style="color: #ffffff;"></strong>
+                </p> 
+                <p style="color: #8585a4; margin-top: 5px;">Validación de seguridad completada con éxito vía token JWT.</p> 
+            </div> 
+
+            <div class="hero-actions" style="justify-content: center; margin-top: 30px;">
+                <a class="button" th:href="@{/inicio}">Volver al inicio</a>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments :: pie}"></div>
+
+</body>  
+</html>

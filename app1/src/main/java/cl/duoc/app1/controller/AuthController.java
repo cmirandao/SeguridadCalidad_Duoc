@@ -3,9 +3,11 @@ package cl.duoc.app1.controller;
 import cl.duoc.app1.model.AppUser;
 import cl.duoc.app1.repository.AppUserRepository;
 import cl.duoc.app1.security.JwtTokenUtil;
+import cl.duoc.app1.security.TokenStore;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,15 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-/**
- * Controlador MVC responsable de la autenticación de usuarios.
- * 
- * Se encarga de:
- * 1. Interceptar los datos del formulario público de inicio de sesión (/login).
- * 2. Validar las credenciales del usuario contra la base de datos.
- * 3. Generar un token JWT y guardarlo en una Cookie segura (HttpOnly) tras un login exitoso, redirigiendo a la vista de inicio.
- */
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class AuthController {
@@ -34,13 +28,15 @@ public class AuthController {
     private final JwtTokenUtil jwtTokenUtil;
     private final AppUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TokenStore tokenStore;
 
-    AuthController(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil, AppUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    AuthController(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil, AppUserRepository userRepository, PasswordEncoder passwordEncoder, TokenStore tokenStore) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtTokenUtil = jwtTokenUtil;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokenStore = tokenStore;
     }
 
     @GetMapping("/login")
@@ -53,8 +49,9 @@ public class AuthController {
         return "registro";
     }
 
+    // Endpoint tradicional por formulario web (Usa Cookie HttpOnly)
     @PostMapping("/login")
-    public String login(
+    public String loginWeb(
             @RequestParam("username") String username, 
             @RequestParam("password") String password,
             HttpServletResponse response) {
@@ -64,6 +61,7 @@ public class AuthController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             
             String jwt = jwtTokenUtil.generateToken(userDetails);
+            tokenStore.setToken(jwt);
             
             Cookie jwtCookie = new Cookie("jwt", jwt);
             jwtCookie.setHttpOnly(true);
@@ -75,6 +73,23 @@ public class AuthController {
 
         } catch (Exception e) {
             return "redirect:/login?error";
+        }
+    }
+
+    // Endpoint REST: Devuelve el token en texto plano JSON/String
+    @PostMapping("/api/login")
+    @ResponseBody
+    public ResponseEntity<String> loginApi(
+            @RequestParam("user") String username, 
+            @RequestParam("encryptedPass") String password) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            String jwt = jwtTokenUtil.generateToken(userDetails);
+            tokenStore.setToken(jwt);
+            return ResponseEntity.ok(jwt);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
         }
     }
 
