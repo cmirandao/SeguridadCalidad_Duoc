@@ -4,6 +4,8 @@ import cl.duoc.app1.model.AppUser;
 import cl.duoc.app1.model.GamerEvent;
 import cl.duoc.app1.repository.AppUserRepository;
 import cl.duoc.app1.repository.GamerEventRepository;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,30 +59,42 @@ public class WebController {
         return "index";
     }
 
-    /**
-     * [PÚBLICA] Búsqueda y Filtrado de Eventos
-     * Recibe parámetros por URL para filtrar los resultados de la base de datos.
-     */
+    /** * [PÚBLICA] Búsqueda y Filtrado de Eventos */
     @GetMapping("/eventos")
     public String buscarEventos(
             @RequestParam(value = "titulo", required = false) String titulo,
             @RequestParam(value = "categoria", required = false) String categoria,
+            @RequestParam(value = "fecha", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(value = "ubicacion", required = false) String ubicacion,
             Model model) {
-        
+
         LocalDate hoy = LocalDate.now();
         List<GamerEvent> resultados;
 
+        // Lógica de filtrado combinada o secuencial según lo que necesite tu
+        // repositorio
         if (titulo != null && !titulo.isEmpty()) {
             resultados = gamerEventRepository
                     .findByTituloContainingIgnoreCaseAndFechaGreaterThanEqualOrderByFechaAsc(titulo, hoy);
         } else if (categoria != null && !categoria.isEmpty()) {
             resultados = gamerEventRepository
                     .findByCategoriaIgnoreCaseAndFechaGreaterThanEqualOrderByFechaAsc(categoria, hoy);
+        } else if (fecha != null) {
+            // Ejemplo de filtro por fecha exacta
+            resultados = gamerEventRepository.findByFechaOrderByFechaAsc(fecha);
+        } else if (ubicacion != null && !ubicacion.isEmpty()) {
+            // Ejemplo de filtro por ubicación aproximada (ignoring case)
+            resultados = gamerEventRepository.findByUbicacionContainingIgnoreCaseOrderByFechaAsc(ubicacion);
         } else {
             resultados = gamerEventRepository.findByFechaGreaterThanEqualOrderByFechaAsc(hoy);
         }
 
+        // Enviamos los resultados y mantenemos los valores seleccionados en la vista
         model.addAttribute("eventos", resultados);
+        model.addAttribute("categoriaSeleccionada", categoria);
+        model.addAttribute("fechaSeleccionada", fecha);
+        model.addAttribute("ubicacionSeleccionada", ubicacion);
+
         return "eventos";
     }
 
