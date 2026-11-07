@@ -62,22 +62,21 @@ Sigue estos pasos para levantar el proyecto en tu entorno local:
 ### Prerrequisitos
 -   Tener instalado **Java JDK 21** o superior.
 -   Tener instalado **Docker y Docker Compose**.
--   Tener instalado **Maven** (o utilizar el wrapper incluido `mvnw`).
 
 ---
 
 ## Despliegue en Contenedores (Docker)
 
-Desde la carpeta `app1`, define una contraseña para MySQL y levanta ambos servicios con Docker Compose. Compose espera a que la base de datos esté lista antes de iniciar la aplicación:
+Desde la carpeta `app1`, define una contraseña para MySQL y levanta ambos servicios con Docker Compose. El contenedor se encargará de compilar y desplegar la aplicación de forma integrada:
 
 * **Windows (PowerShell):**
   ```powershell
   $env:MYSQL_ROOT_PASSWORD = "elige-una-contrasena"
-  docker compose up --build
+  docker compose up --build -d
   ```
 * **Linux / macOS:**
   ```bash
-  MYSQL_ROOT_PASSWORD='elige-una-contrasena' docker compose up --build
+  MYSQL_ROOT_PASSWORD='elige-una-contrasena' docker compose up --build -d
   ```
 
 La aplicación estará disponible en `http://localhost:8081/`. Los datos de MySQL persisten en un volumen Docker dedicado.
