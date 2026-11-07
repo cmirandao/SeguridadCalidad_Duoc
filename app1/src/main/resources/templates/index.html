@@ -70,8 +70,8 @@
                     📅 <span th:text="${evento.fecha}"></span>
                 </p>
 
-                <div th:each="destacado : ${destacados}">
-                    <a th:href="@{/eventos/{id}(id=${destacado.id})}">Ver detalles</a>
+                <div>
+                    <a th:href="@{/eventos/{id}(id=${evento.id})}">Ver detalles</a>
                 </div>
             </article>
         </div>

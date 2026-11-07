@@ -6,13 +6,21 @@ import cl.duoc.app1.repository.AppUserRepository;
 import cl.duoc.app1.repository.GamerEventRepository;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import cl.duoc.app1.security.TokenStore;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,10 +31,12 @@ public class WebController {
 
     private final GamerEventRepository gamerEventRepository;
     private final AppUserRepository appUserRepository;
+    private final TokenStore tokenStore;
 
-    WebController(GamerEventRepository gamerEventRepository, AppUserRepository appUserRepository) {
+    public WebController(GamerEventRepository gamerEventRepository, AppUserRepository appUserRepository, TokenStore tokenStore) {
         this.gamerEventRepository = gamerEventRepository;
         this.appUserRepository = appUserRepository;
+        this.tokenStore = tokenStore;
     }
 
     @GetMapping("/perfil")
@@ -41,9 +51,8 @@ public class WebController {
 
     /**
      * [PÚBLICA] Página de Inicio
-     * Muestra los eventos destacados y los próximos eventos generales.
      */
-    @GetMapping({"/", "/inicio"})
+    @GetMapping({"/", "/inicio", "/home"})
     public String inicio(Model model) {
         LocalDate hoy = LocalDate.now();
         
@@ -100,7 +109,6 @@ public class WebController {
 
     /**
      * [PRIVADA] Detalle de Eventos
-     * Ruta protegida por SecurityConfig. Solo accesible con un JWT válido.
      */
     @GetMapping("/eventos/{id}")
     public String detalleEvento(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
@@ -113,5 +121,53 @@ public class WebController {
             redirectAttributes.addFlashAttribute("alertaPopup", "El evento seleccionado ya no está disponible.");
             return "redirect:/inicio";
         }
+    }
+
+    /**
+     * [API REST] Endpoint interno consumido por RestTemplate para la integración JWT
+     */
+    @org.springframework.web.bind.annotation.ResponseBody
+    @org.springframework.web.bind.annotation.GetMapping("/api/greetings")
+    public ResponseEntity<String> apiGreeting(@RequestParam(name="name", required=false, defaultValue="Usuario") String name) {
+        return ResponseEntity.ok("¡Hola, " + name + "! Acceso autorizado con éxito mediante token JWT.");
+    }
+
+    /**
+     * [PRIVADA] Endpoint de integración JWT
+     */
+    @GetMapping("/greetings")
+    public String greeting(Authentication authentication, Model model) {  
+        String displayName = "Usuario";
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            String principalName = authentication.getName();
+            
+            AppUser usuario = appUserRepository.findByUsernameIgnoreCase(principalName)
+                .or(() -> appUserRepository.findByEmailIgnoreCase(principalName))
+                .orElse(null);
+
+            if (usuario != null && usuario.getNombre() != null) {
+                displayName = usuario.getNombre();
+            }
+        }
+
+        String url = "http://localhost:8081/api/greetings?name={name}"; 
+        final var restTemplate = new RestTemplate();
+        String token = tokenStore.getToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+            url, 
+            HttpMethod.GET, 
+            entity, 
+            String.class, 
+            displayName
+        );
+            
+        model.addAttribute("name", response.getBody());  
+        return "greetings";  
     }
 }
