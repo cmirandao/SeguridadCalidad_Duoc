@@ -4,6 +4,21 @@ Todas las modificaciones notables de este proyecto serán documentadas en este a
 
 ---
 
+## [1.3.1] - 2026-11-22
+
+### Seguridad
+- **CSRF (`SecurityConfig.java`):** Se eliminó la deshabilitación global de CSRF (`java:S4502`), manteniendo la protección activa para vistas Thymeleaf y restringiendo su exclusión únicamente a los endpoints REST *stateless* (`/api/**`) autenticados con JWT.
+- **Repositorio CSRF (`SecurityConfig.java`):** Se configuró `new CookieCsrfTokenRepository()` (manteniendo `HttpOnly` activo, `java:S3330`) junto con `CsrfTokenRequestAttributeHandler` para soportar la validación CSRF en un esquema `SessionCreationPolicy.STATELESS`.
+- **Cookie JWT (`AuthController.java`):** Se habilitó el atributo `Secure` (`setSecure(true)`) en la cookie del token JWT (`java:S2092`), conservando `HttpOnly`.
+
+### Corregido
+- **Prevención de ReDoS (`RegistrationServiceImpl.java`):** Se reemplazaron las tres expresiones regulares de validación de contraseña con riesgo de *backtracking* (`java:S5852`) por verificaciones de caracteres de complejidad lineal (`chars().noneMatch(...)` para mayúsculas, minúsculas y dígitos).
+
+### Calidad y Documentación
+- Se ejecutó auditoría estática (SAST) local con SonarQube Community Build (ciclo antes/después), reduciendo las incidencias abiertas de 5 a 0 (con 1 hallazgo en estado *Accepted* justificado por arquitectura en `/api/**`).
+
+---
+
 ## [1.3.0] - Semana 3: Seguridad Avanzada, JWT y Endurecimiento (Hardening)
 
 ### Agregado

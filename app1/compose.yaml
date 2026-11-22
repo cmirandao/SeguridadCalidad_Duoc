@@ -4,6 +4,8 @@ services:
     environment:
       MYSQL_DATABASE: portal_gamer
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD before starting}"
+    ports:
+      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:

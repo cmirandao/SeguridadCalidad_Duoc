@@ -57,17 +57,85 @@ cl.duoc.app1
 
 ## Instrucciones de Ejecución
 
-Sigue estos pasos para levantar el proyecto en tu entorno local:
+Sigue estos pasos para levantar el proyecto en tu entorno local.
 
 ### Prerrequisitos
--   Tener instalado **Java JDK 21** o superior.
--   Tener instalado **Docker y Docker Compose**.
+- **Java JDK 21** o superior.
+- **Maven 3.9+** instalado (`mvn -v`) **o** Maven Wrapper configurado (`./mvnw`) en `app1/`.
+- **Docker y Docker Compose** (para levantar MySQL y/o desplegar la app en contenedores).
+
+> **Nota (macOS/Linux):** si al ejecutar `./mvnw` obtienes `Permission denied`, otorga permiso de ejecución con `chmod +x mvnw` desde la carpeta `app1/`. Si el wrapper indica que falta `./.mvn/wrapper/maven-wrapper.properties`, puedes usar `mvn` directamente o regenerarlo con `mvn -N wrapper:wrapper`.
+
+### Configuración de base de datos
+- La aplicación utiliza **MySQL 8** y, por defecto, se conecta a `jdbc:mysql://localhost:3306/portal_gamer` con usuario `root` (ver `app1/src/main/resources/application.properties`).
+- En `app1/compose.yaml` el servicio `mysql` expone el puerto `3306` al host y crea la base `portal_gamer`. La contraseña de `root` se define con la variable `MYSQL_ROOT_PASSWORD`.
+- Puedes definirla en un archivo `app1/.env`:
+  ```env
+  MYSQL_ROOT_PASSWORD=root
+  ```
+  o exportarla en la terminal antes de ejecutar Docker Compose.
+
+### 1. Levantar MySQL (requerido para ejecución local y tests)
+Desde la carpeta `app1/`:
+
+```bash
+# Usa el valor definido en .env o exporta MYSQL_ROOT_PASSWORD antes
+docker compose up -d mysql
+```
+
+Espera a que el contenedor esté saludable (`healthy`) antes de iniciar la aplicación o ejecutar los tests:
+
+```bash
+docker compose ps
+```
+
+### 2. Ejecución local de la aplicación (Spring Boot)
+Con MySQL accesible en `localhost:3306`:
+
+```bash
+cd app1
+mvn spring-boot:run
+# o, si usas el wrapper configurado:
+# ./mvnw spring-boot:run
+```
+
+La aplicación estará disponible en `http://localhost:8081/`.
+
+Si necesitas usar credenciales o URL distintas a las predeterminadas, puedes sobreescribirlas con variables de entorno, por ejemplo:
+`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`.
+
+### 3. Compilación y pruebas
+Los tests de integración/contexto (`@SpringBootTest` y tests de repositorio con base real) requieren **MySQL en ejecución y accesible** en `localhost:3306` con la configuración esperada.
+
+```bash
+cd app1
+# Compilar y ejecutar tests
+mvn clean test
+# o compilar, ejecutar tests y generar el JAR
+mvn clean install
+```
+
+Si solo deseas compilar y generar el artefacto sin ejecutar tests (por ejemplo, sin base de datos disponible):
+
+```bash
+mvn clean package -DskipTests
+```
 
 ---
 
 ## Despliegue en Contenedores (Docker)
 
-Desde la carpeta `app1`, define una contraseña para MySQL y levanta ambos servicios con Docker Compose. El contenedor se encargará de compilar y desplegar la aplicación de forma integrada:
+El `app1/Dockerfile` utiliza un **build multi-etapa**: en la primera etapa compila el proyecto con Maven Wrapper (`./mvnw`) y genera el JAR, y en la segunda crea la imagen de ejecución con JRE. No es necesario compilar ni generar `target/*.jar` manualmente antes de construir la imagen.
+
+Desde la carpeta `app1`, con `MYSQL_ROOT_PASSWORD` definida (en `app1/.env` o exportada en la terminal):
+
+```bash
+docker compose up --build -d
+```
+
+Esto construirá la imagen de la aplicación y levantará los servicios (`mysql` y `app`). La primera compilación puede tardar más mientras se descargan dependencias de Maven.
+
+Ejemplos para definir `MYSQL_ROOT_PASSWORD` al vuelo:
 
 * **Windows (PowerShell):**
   ```powershell
@@ -79,7 +147,21 @@ Desde la carpeta `app1`, define una contraseña para MySQL y levanta ambos servi
   MYSQL_ROOT_PASSWORD='elige-una-contrasena' docker compose up --build -d
   ```
 
-La aplicación estará disponible en `http://localhost:8081/`. Los datos de MySQL persisten en un volumen Docker dedicado.
+La aplicación estará disponible en `http://localhost:8081/`. Los datos de MySQL persisten en el volumen Docker `mysql-data`.
+
+Para ver el estado de los servicios:
+
+```bash
+docker compose ps
+```
+
+Para detener los servicios:
+
+```bash
+docker compose down
+```
+
+> **Nota:** el build de la imagen ejecuta `mvnw clean package -DskipTests` (sin tests) porque no hay una base de datos disponible durante la construcción. Para validar el proyecto con tests, ejecútalos localmente con MySQL en marcha como se indica en la sección **Compilación y pruebas**.
 
 ---
 
