@@ -1,26 +1,31 @@
-# Construcción del proyecto con Maven
+# Etapa 1: compilación del proyecto con Maven
 FROM eclipse-temurin:21-jdk-alpine AS build
+
 WORKDIR /app
 
-# Copiar los archivos de Maven wrapper y dependencias
-COPY mvnw .
+# Copiar configuración de Maven Wrapper y dependencias del proyecto
+COPY mvnw pom.xml ./
 COPY .mvn .mvn
-COPY pom.xml .
+
+# Descargar dependencias (aprovecha la caché de capas)
+RUN chmod +x mvnw && ./mvnw -B -q dependency:go-offline
+
+# Copiar código fuente y construir el JAR (sin tests, ya que no hay BD en el build)
 COPY src src
+RUN ./mvnw -B clean package -DskipTests
 
-# Dar permisos de ejecución al wrapper y compilar el proyecto sin ejecutar pruebas
-RUN chmod +x mvnw
-RUN ./mvnw clean package -DskipTests
-
-# Imagen final ligera para ejecución
+# Etapa 2: imagen de ejecución
 FROM eclipse-temurin:21-jre-alpine
+
+# Creación de usuario y grupo no privilegiados
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-# Copiar el archivo JAR generado desde la etapa de construcción
 COPY --from=build /app/target/*.jar app.jar
+RUN chown -R appuser:appgroup /app
 
-# Exponer el puerto en el que corre Spring Boot
+USER appuser
+
 EXPOSE 8081
-
-# Comando para ejecutar la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]

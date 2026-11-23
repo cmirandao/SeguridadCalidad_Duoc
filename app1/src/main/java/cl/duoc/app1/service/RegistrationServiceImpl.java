@@ -53,9 +53,9 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         if (password == null || password.length() < 8
-                || !password.matches(".*[A-Z].*")
-                || !password.matches(".*[a-z].*")
-                || !password.matches(".*\\d.*")) {
+                || password.chars().noneMatch(Character::isUpperCase)
+                || password.chars().noneMatch(Character::isLowerCase)
+                || password.chars().noneMatch(Character::isDigit)) {
             throw new IllegalArgumentException(
                 "La contraseña debe tener al menos 8 caracteres, "
                 + "una mayúscula, una minúscula y un número."
