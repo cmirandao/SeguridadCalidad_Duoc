@@ -1,0 +1,28 @@
+# --- IDEs y Editores ---
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+
+# --- Archivos pesados / Empaquetados ---
+*.tar
+*.zip
+*.jar
+*.war
+
+# --- Maven / Compilación ---
+target/
+**/target/
+*.class
+*.log
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Spring Boot ---
+reloaded-classes/
+.sts4-cache/

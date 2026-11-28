@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del evento | Portal Gamer</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments :: menu}"></div>
+
+<main class="container detail-container">
+
+    <a class="back-link" th:href="@{/eventos}">
+        ← Volver a los eventos
+    </a>
+
+    <section class="detail-hero">
+        <span class="badge" th:text="${evento.categoria}"></span>
+        <h1 th:text="${evento.titulo}"></h1>
+        <p th:text="${evento.descripcion}"></p>
+    </section>
+
+    <div class="detail-grid">
+
+        <section class="card">
+            <h2>Información del evento</h2>
+
+            <p>
+                <strong>Fecha:</strong>
+                <span th:text="${evento.fecha}"></span>
+            </p>
+
+            <p>
+                <strong>Hora:</strong>
+                <span th:if="${evento.hora != null}"
+                      th:text="${evento.hora}"></span>
+                <span th:if="${evento.hora == null}">
+                    Por confirmar
+                </span>
+            </p>
+
+            <p>
+                <strong>Ubicación:</strong>
+                <span th:text="${evento.ubicacion}"></span>
+            </p>
+
+            <p>
+                <strong>Dirección:</strong>
+                <span th:text="${evento.direccion}"></span>
+            </p>
+
+            <p>
+                <strong>Organizadores:</strong>
+                <span th:text="${evento.organizadores}"></span>
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Servicios disponibles</h2>
+
+            <ul class="service-list">
+                <li>
+                    <span th:if="${evento.estacionamiento}">✓</span>
+                    <span th:unless="${evento.estacionamiento}">✕</span>
+                    Estacionamiento
+                </li>
+
+                <li>
+                    <span th:if="${evento.locomocion}">✓</span>
+                    <span th:unless="${evento.locomocion}">✕</span>
+                    Locomoción colectiva
+                </li>
+
+                <li>
+                    <span th:if="${evento.comidas}">✓</span>
+                    <span th:unless="${evento.comidas}">✕</span>
+                    Servicio de comidas
+                </li>
+
+                <li>
+                    <span th:if="${evento.alojamiento}">✓</span>
+                    <span th:unless="${evento.alojamiento}">✕</span>
+                    Alojamiento
+                </li>
+            </ul>
+        </section>
+
+    </div>
+
+    <section class="card section">
+        <h2>Principales expositores</h2>
+        <p th:text="${evento.expositores}"></p>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments :: pie}"></div>
+
+</body>
+</html>
